@@ -5,4 +5,5 @@ const g = 3;
 
 for (let i = 0; i < 10; i++) {
 console.log(`${a} + ${b} = ${s}`);
+console.log(`${s} + ${g} = ${s + g}`);
 }
