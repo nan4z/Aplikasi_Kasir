@@ -1,4 +1,3 @@
-# Aplikasi Kasir Toko 
 # Aplikasi_Kasir
 Daftar Anggota & Akun GitHub:
 1. [M. LAZUARDI LAEL EL-QODRI] - [263140701111007] (@LazuardiLael17)
