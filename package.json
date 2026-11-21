@@ -1,0 +1,30 @@
+{
+  "name": "aplikasi_kasir",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nan4z/Aplikasi_Kasir.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/nan4z/Aplikasi_Kasir/issues"
+  },
+  "homepage": "https://github.com/nan4z/Aplikasi_Kasir#readme",
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "@types/readline-sync": "^1.4.8",
+    "ts-node": "^10.9.2",
+    "typescript": "^7.0.2"
+  },
+  "dependencies": {
+    "readline-sync": "^1.4.10"
+  }
+}
