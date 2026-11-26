@@ -1,32 +1,20 @@
+// Aplikasi Kasir dan Manajemen Stok Toko Grosir
 import * as readline from "readline-sync";
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-for (let i = 0; i < 10; i++) {
-console.log(`${a} + ${b} = ${s}`);
-console.log(`${s} + ${g} = ${s + g}`);
-
-// Feature : search data
-
-
-}
-=======
-=======
->>>>>>> e721ba353418aeaeaf0eae9d83384b54f1cb7d1b
 // ===== TIPE DATA =====
 interface Barang {
-    kode: string;
-    nama: string;
-    harga: number;
-    stok: number;
-    tersedia: boolean;
+  kode: string;
+  nama: string;
+  harga: number;
+  stok: number;
+  tersedia: boolean;
 }
 
 interface ItemBelanja {
-    kode: string;
-    nama: string;
-    harga: number;
-    jumlah: number;
+  kode: string;
+  nama: string;
+  harga: number;
+  jumlah: number;
 }
 
 // ===== VARIABEL & KONSTANTA =====
@@ -39,8 +27,4 @@ const daftarBarang: Barang[] = [
   { kode: "B03", nama: "Gula Pasir 1kg", harga: 17000, stok: 8, tersedia: true },
 ];
 let totalPendapatan: number = 0;
-let aplikasiBerjalan: boolean = true;
-<<<<<<< HEAD
->>>>>>> feature/update-data
-=======
->>>>>>> e721ba353418aeaeaf0eae9d83384b54f1cb7d1b
+let aplikasiBerjalan: boolean = true; 
