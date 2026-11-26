@@ -1,6 +1,7 @@
 import * as readline from "readline-sync";
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 for (let i = 0; i < 10; i++) {
 console.log(`${a} + ${b} = ${s}`);
 console.log(`${s} + ${g} = ${s + g}`);
@@ -10,6 +11,8 @@ console.log(`${s} + ${g} = ${s + g}`);
 
 }
 =======
+=======
+>>>>>>> e721ba353418aeaeaf0eae9d83384b54f1cb7d1b
 // ===== TIPE DATA =====
 interface Barang {
     kode: string;
@@ -37,4 +40,7 @@ const daftarBarang: Barang[] = [
 ];
 let totalPendapatan: number = 0;
 let aplikasiBerjalan: boolean = true;
+<<<<<<< HEAD
 >>>>>>> feature/update-data
+=======
+>>>>>>> e721ba353418aeaeaf0eae9d83384b54f1cb7d1b
