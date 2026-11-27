@@ -22,6 +22,7 @@ interface ItemBelanja {
 const NAMA_TOKO: string = "TOKO GROSIR SUMBER REJEKI";
 const BATAS_STOK_MENIPIS: number = 10;
 const ISI_PER_DUS: number = 12;
+<<<<<<< Updated upstream
 const PERSEN_DISKON_BESAR: number = 0.05; // 5% diskon jika total >= 1.000.000
 const PERSEN_DISKON_SEDANG: number = 0.05; // 5% diskon jika total >= 500.000
 const PERSEN_DISKON_MEMBER: number = 0.02; // 2% diskon jika total >= 100.000
@@ -111,3 +112,12 @@ function tampilkanDaftarBarangMenipis(daftarBarang: Barang[]): void {
 }
 
 //
+=======
+const daftarBarang: Barang[] = [
+  { kode: "B01", nama: "Beras 5kg", harga: 68000, stok: 40, tersedia: true },
+  { kode: "B02", nama: "Minyak Goreng 1L", harga: 18000, stok: 60, tersedia: true },
+  { kode: "B03", nama: "Gula Pasir 1kg", harga: 17000, stok: 8, tersedia: true },
+];
+let totalPendapatan: number = 0;
+let aplikasiBerjalan: boolean = true;  
+>>>>>>> Stashed changes
