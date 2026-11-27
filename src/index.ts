@@ -7,7 +7,7 @@ interface Barang {
   nama: string;
   satuan: string;
   harga: number;
-  stok: number;
+  stok: number; 
   tersedia: boolean;
 }
 
@@ -110,11 +110,13 @@ function tampilkanDaftarBarangMenipis(daftarBarang: Barang[]): void {
   }
 }
 
-//
-const daftarBarang: Barang[] = [
-  { kode: "B01", nama: "Beras 5kg", harga: 68000, stok: 40, tersedia: true },
-  { kode: "B02", nama: "Minyak Goreng 1L", harga: 18000, stok: 60, tersedia: true },
-  { kode: "B03", nama: "Gula Pasir 1kg", harga: 17000, stok: 8, tersedia: true },
-];
-let totalPendapatan: number = 0;
-let aplikasiBerjalan: boolean = true;  
+// Function untuk mencari barang berdasarkan kode menggunakan loop for
+function cariBarangByKode(daftarBarang: Barang[], kode: string): Barang | null {
+  const kodeBersih: string = kode.trim().toUpperCase();
+  for (let i: number = 0; i < daftarBarang.length; i++) {
+    if (daftarBarang[i]!.kode === kodeBersih) {
+      return daftarBarang[i]!;
+    }
+  }
+  return null;
+}
