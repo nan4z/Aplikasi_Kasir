@@ -339,3 +339,64 @@ console.log("===================================");
 }
 
 //==========================
+// PROGRAM UTAMA & MENU (LOOP WHILE)
+//==========================
+
+function main(): void {
+  console.log("\nSelamat datang di TOKO GROSIR SUMBER REJEKI");
+
+  // Penanda menu terus berulang sampai pengguna memilih keluar
+  let berjalan: boolean = true;
+
+  while (berjalan) {
+    console.log("\n=================================");
+    console.log("APLIKASI KASIR & MANAJEMEN STOK TOKO GROSIR");
+    console.log("=================================");
+    console.log("1. Tampilkan Daftar Barang");
+    console.log("2. Tampilkan Daftar Barang Menipis/Habis");
+    console.log("3. Tambah Stok Barang Lama");
+    console.log("4. Tambah Barang Baru");
+    console.log("5. Transaksi Kasir");
+    console.log("0. Keluar");
+
+    // Membaca pilihan menu dari pengguna
+    const pilihan: string = readline.question("Pilih menu (0-5): ").trim();
+
+    // Proses pilihan menu (seleksi kondisi)
+    if (pilihan === "1") {
+      tampilkanDaftarBarang(daftarBarang);
+    } else if (pilihan === "2") {
+      tampilkanDaftarBarangMenipis(daftarBarang);
+    } else if (pilihan === "3") {
+      tampilkanDaftarBarang(daftarBarang);
+      const kode: string = readline.question("Masukkan Kode Barang: ");
+      const jumlah: number = inputAngka("Jumlah stok masuk: ", 1);
+      const barang: Barang | null = cariBarangByKode(daftarBarang, kode);
+      if (barang !== null) {
+        barang.stok += jumlah;
+        barang.tersedia = true;
+        console.log(`[OK] Stok '${barang.nama}' berhasil ditambah. Stok sekarang: ${barang.stok}`);
+      } else {
+        console.log("[!] Barang tidak ditemukan.");
+      }
+    } else if (pilihan === "4") {
+      const kode: string = readline.question("Kode Barang Baru: ");
+      const nama: string = readline.question("Nama Barang: ");
+      const satuan: string = readline.question("Satuan (Karung/Dus/Bal/Pcs): ");
+      const hargaEceran: number = inputAngka("Harga Eceran (Rp): ", 1);
+      const hargaGrosir: number = inputAngka("Harga Grosir (Rp): ", 1);
+      const minGrosir: number = inputAngka("Minimal Beli Grosir: ", 1);
+      const stokAwal: number = inputAngka("Stok Awal: ", 0);
+      tambahBarangBaru(daftarBarang, kode, nama, satuan, hargaEceran, hargaGrosir, minGrosir, stokAwal);
+    } else if (pilihan === "5") {
+      prosesKasir(daftarBarang);
+    } else if (pilihan === "0") {
+      console.log("Terima kasih. Program selesai.");
+      berjalan = false;
+    } else {
+      console.log("[!] Menu tidak tersedia, silakan pilih 0-5.");
+    }
+  }   // penutup while
+}     // penutup main
+
+main(); // panggil main agar program berjalan
