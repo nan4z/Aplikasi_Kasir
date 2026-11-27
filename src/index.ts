@@ -7,6 +7,9 @@ interface Barang {
   nama: string;
   satuan: string;
   harga: number;
+  hargaEceran?: number;
+  hargaGrosir?: number;
+  minGrosir?: number;
   stok: number; 
   tersedia: boolean;
 }
@@ -119,4 +122,56 @@ function cariBarangByKode(daftarBarang: Barang[], kode: string): Barang | null {
     }
   }
   return null;
+}
+
+// Function untuk mendaftarkan barang baru ke dalam array stok
+function tambahBarangBaru(
+  daftarBarang: Barang[],
+  kode: string,
+  nama: string,
+  satuan: string,
+  hargaEceran: number,
+  hargaGrosir: number,
+  minGrosir: number,
+  stokAwal: number
+): boolean {
+  const kodeBersih: string = kode.trim().toUpperCase();
+  const namaBersih: string = nama.trim();
+
+  // Validasi menggunakan operator logika (||) dan perbandingan
+  if (kodeBersih === "" || namaBersih === "") {
+    console.log("[!] Kode dan nama barang tidak boleh kosong.");
+    return false;
+  }
+
+  if (cariBarangByKode(daftarBarang, kodeBersih) !== null) {
+    console.log("[!] Kode barang sudah terdaftar.");
+    return false;
+  }
+
+  if (hargaEceran <= 0 || hargaGrosir <= 0 || minGrosir < 1 || stokAwal < 0) {
+    console.log("[!] Harga harus > 0, minimal grosir >= 1, dan stok >= 0.");
+    return false;
+  }
+
+  if (hargaGrosir > hargaEceran) {
+    console.log("[!] Harga grosir tidak boleh lebih mahal dari harga eceran.");
+    return false;
+  }
+
+  const barangBaru: Barang = {
+    kode: kodeBersih,
+    nama: namaBersih,
+    satuan: satuan.trim() === "" ? "Pcs" : satuan.trim(),
+    harga: hargaEceran,
+    hargaEceran: hargaEceran,
+    hargaGrosir: hargaGrosir,
+    minGrosir: minGrosir,
+    stok: stokAwal,
+    tersedia: stokAwal > 0,
+  };
+
+  daftarBarang.push(barangBaru);
+  console.log(`[OK] Barang baru '${barangBaru.nama}' berhasil ditambahkan.`);
+  return true;
 }
