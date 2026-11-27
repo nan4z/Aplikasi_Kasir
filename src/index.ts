@@ -19,13 +19,16 @@ interface ItemBelanja {
   nama: string;
   harga: number;
   jumlah: number;
+  hargaSatuan: number;
+  keteranganHarga: string;
+  subtotal: number;
 }
 
 // ===== VARIABEL & KONSTANTA =====
 const NAMA_TOKO: string = "TOKO GROSIR SUMBER REJEKI";
 const BATAS_STOK_MENIPIS: number = 10;
 const ISI_PER_DUS: number = 12;
-const PERSEN_DISKON_BESAR: number = 0.05; // 5% diskon jika total >= 1.000.000
+const PERSEN_DISKON_BESAR: number = 0.10; // 10% diskon jika total >= 1.000.000
 const PERSEN_DISKON_SEDANG: number = 0.05; // 5% diskon jika total >= 500.000
 const PERSEN_DISKON_MEMBER: number = 0.02; // 2% diskon jika total >= 100.000
 const daftarBarang: Barang[] = buatDataStokAwal();
@@ -175,3 +178,164 @@ function tambahBarangBaru(
   console.log(`[OK] Barang baru '${barangBaru.nama}' berhasil ditambahkan.`);
   return true;
 }
+
+//function seleksi kondisi untuk menentukan harga grosir atau ecera
+function tentukanHargaBarang(barang: Barang, jumlahBeli: number): number {
+  if (jumlahBeli >= (barang.minGrosir ?? Infinity) && barang.hargaGrosir !== undefined) {
+    return barang.hargaGrosir;
+  } else {
+    return barang.hargaEceran ?? barang.harga;
+  }
+}
+
+//Function Hitung Subtotal Belanja
+function hitungSubtotal(hargaSatuan : number, JumlahBeli : number): number {
+  return hargaSatuan * JumlahBeli;
+}
+
+//Function  Menghitung Nominal Diskon (Kondisi dan Operator Logika)
+function hitungDiskon(totalBelanja: number, isMember: boolean): number {
+  let persenDiskon: number = 0;
+
+  if (totalBelanja >= 1000000) {
+    persenDiskon = PERSEN_DISKON_BESAR
+  } else if (totalBelanja >= 500000) {
+    persenDiskon = PERSEN_DISKON_SEDANG
+  }
+  if (isMember && totalBelanja > 0) {
+    persenDiskon += PERSEN_DISKON_MEMBER;
+  }
+const nominalDiskon: number = Math.floor(totalBelanja * persenDiskon);
+return nominalDiskon;
+}
+
+//Function Hitung Uang Kembalian
+function hitungKembalian(totalBayar: number, uangDibayar: number): number {
+  return uangDibayar - totalBayar;
+}
+
+// Function mengurangi stok barang setelah transaksi
+function kurangiStok(barang: Barang, jumlahBeli: number): void {
+barang.stok -= jumlahBeli;
+if (barang.stok <= 0) {
+barang.tersedia = false;
+}
+}
+
+//Function membaca input angka bulat + Validasi input
+function inputAngka(pertanyaan: string, minimal :number): number {
+  while (true) {
+    const teks: string = readline.question(pertanyaan);
+    const angka: number = Number(teks);
+    if (teks !== "" && !isNaN(angka) && Number.isInteger(angka) && angka >= minimal) {
+      return angka;
+    } 
+    console.log(`[!] Masukkan angka bulat minimal ${minimal}`);
+  }
+}
+
+
+// Function alur transaksi kasir
+function prosesKasir(daftarBarang: Barang[]): void {
+  const keranjang: ItemBelanja[] = [];
+  let tambahLagi: boolean = true;
+  while (tambahLagi) {
+    tampilkanDaftarBarang(daftarBarang);
+    const kodeInput: string = readline
+    .question("Masukkan Kode Barang (atau '0' untuk selesai): ")
+    .trim();
+      if (kodeInput === "0") {
+      break;
+      }
+      const barang: Barang | null = cariBarangByKode(daftarBarang, kodeInput);
+      if (barang === null) {
+      console.log("[!] Barang tidak ditemukan.");
+      continue;
+      } 
+      if (barang.stok <= 0) {
+      console.log("[!] Stok barang sedang habis.");
+      continue;
+      }
+      const jumlahBeli: number = inputAngka(`Jumlah beli (maks ${barang.stok}): `, 1);
+      if (jumlahBeli > barang.stok) {
+      console.log("[!] Jumlah beli melebihi stok yang tersedia.");
+      continue;
+      }
+
+// Menentukan harga satuan (grosir atau eceran) dan menghitung subtotal
+const hargaEceran: number = tentukanHargaBarang(barang, jumlahBeli);
+const keteranganHarga: string =
+  barang.minGrosir !== undefined && jumlahBeli >= barang.minGrosir && barang.hargaGrosir !== undefined
+    ? "Grosir"
+    : "Eceran";
+const subtotal: number = hitungSubtotal(hargaEceran, jumlahBeli);
+
+// Kurangi stok barang dan masukkan ke keranjang
+kurangiStok(barang, jumlahBeli);
+keranjang.push({
+  kode: barang.kode,
+  nama: barang.nama,
+  jumlah: jumlahBeli,
+  hargaSatuan: hargaEceran,
+  keteranganHarga: keteranganHarga,
+  subtotal: subtotal,
+  harga: 0
+});
+  console.log(
+    `[+] Ditambahkan: ${barang.nama} x${jumlahBeli} (${keteranganHarga}) = Rp${subtotal}`
+    );
+  const jawabLanjut: string = readline
+  .question("Tambah barang lain? (y/n): ")
+  .trim()
+  .toLowerCase();
+    if (jawabLanjut !== "y") {
+    tambahLagi = false;
+  }
+}
+  if (keranjang.length === 0) {
+  console.log("[!] Transaksi dibatalkan karena keranjang kosong.");
+  return;
+}
+
+// Hitung total belanja menggunakan loop for
+let totalKotor: number = 0;
+  for (let i: number = 0; i < keranjang.length; i++) {
+  totalKotor += keranjang[i]!.subtotal;
+}
+
+  const jawabMember: string = readline
+  .question("Apakah pembeli member grosir? (y/n): ")
+  .trim()
+  .toLowerCase();
+  const isMember: boolean = jawabMember === "y";
+  const diskon: number = hitungDiskon(totalKotor, isMember);
+  const totalBayar: number = totalKotor - diskon;
+    console.log(`\nTotal Belanja : Rp${totalKotor}`);
+    console.log(`Diskon : Rp${diskon}`);
+    console.log(`Total Tagihan : Rp${totalBayar}`);
+  let uangDiterima: number = inputAngka("Masukkan Uang Bayar (Rp): ", 0);
+  while (uangDiterima < totalBayar) {
+  console.log(`[!] Uang kurang Rp${totalBayar - uangDiterima}. Silakan masukkan lagi.`);
+  uangDiterima = inputAngka("Masukkan Uang Bayar (Rp): ", 0);
+}
+  const kembalian: number = hitungKembalian(totalBayar, uangDiterima);
+
+// Cetak struk 
+console.log("\n=== STRUK TRANSAKSI TOKO GROSIR ===");
+for (let i: number = 0; i < keranjang.length; i++) {
+const item: ItemBelanja = keranjang[i]!;
+console.log(
+`${i + 1}. ${item.nama} (${item.keteranganHarga}) | ` +
+`${item.jumlah} x Rp${item.hargaSatuan} = Rp${item.subtotal}`
+);
+}
+console.log("-----------------------------------");
+console.log(`Total Kotor : Rp${totalKotor}`);
+console.log(`Diskon : Rp${diskon}`);
+console.log(`Total Bayar : Rp${totalBayar}`);
+console.log(`Uang Diterima : Rp${uangDiterima}`);
+console.log(`Kembalian : Rp${kembalian}`);
+console.log("===================================");
+}
+
+//==========================
