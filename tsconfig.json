@@ -7,8 +7,13 @@
 
     // Environment Settings
     // See also https://aka.ms/tsconfig/module
-    "module": "nodenext",
+    "module": "commonjs",
     "target": "esnext",
+    "types": ["node"],
+    "esModuleInterop": true,
+    "allowArbitraryExtensions": true,
+    "moduleResolution": "node",
+    // Add "node" here only when @types/node is installed.
     // For Node.js, install @types/node and uncomment:
     // "types": ["node"],
     // "lib": ["esnext"],
@@ -40,5 +45,7 @@
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
     "skipLibCheck": true,
-  }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
 }
