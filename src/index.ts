@@ -3,21 +3,20 @@ import * as readline from "readline-sync";
 
 // ===== TIPE DATA =====
 interface Barang {
-  kode: string;
+  id: string;
   nama: string;
+  kategori: string;
   satuan: string;
-  harga: number;
-  hargaEceran?: number;
-  hargaGrosir?: number;
-  minGrosir?: number;
+  hargaSatuan: number;
+  hargaGrosir: number;
+  minGrosir: number;
   stok: number; 
   tersedia: boolean;
 }
 
 interface ItemBelanja {
-  kode: string;
+  idbarang: string;
   nama: string;
-  harga: number;
   jumlah: number;
   hargaSatuan: number;
   keteranganHarga: string;
@@ -32,6 +31,8 @@ const PERSEN_DISKON_BESAR: number = 0.10; // 10% diskon jika total >= 1.000.000
 const PERSEN_DISKON_SEDANG: number = 0.05; // 5% diskon jika total >= 500.000
 const PERSEN_DISKON_MEMBER: number = 0.02; // 2% diskon jika total >= 100.000
 const daftarBarang: Barang[] = buatDataStokAwal();
+let totalPendapatan: number = 0;
+let aplikasiBerjalan: boolean = true;
  
 // ===========================
 // KUMPULAN FUNCTION
@@ -41,39 +42,56 @@ const daftarBarang: Barang[] = buatDataStokAwal();
 function buatDataStokAwal(): Barang[] {
   const daftarBarang: Barang[] = [
     {
-      kode: "BRG01",
+      id: "BRG01",
       nama: "Beras 5kg",
+      kategori: "Beras",
       satuan: "karung",
-      harga: 68000,
+      hargaSatuan: 68000,
+      hargaGrosir: 65000,
+      minGrosir: 10,
       stok: 40,
       tersedia: true
     },
     {
-      kode: "BRG02",
+      id: "BRG02",
       nama: "Minyak Goreng 1L",
+      kategori: "Minyak",
       satuan: "botol",
-      harga: 18000,
+      hargaSatuan: 18000,
+      hargaGrosir: 17000,
+      minGrosir: 5,
       stok: 60,
       tersedia: true
     },
     {
-      kode: "BRG03",
+      id: "BRG03",
       nama: "Gula Pasir 1kg",
+      kategori: "Gula",
       satuan: "kg",
-      harga: 19000,
+      hargaSatuan: 19000,
+      hargaGrosir: 18000,
+      minGrosir: 5,
       stok: 10,
       tersedia: true
     },
     {
-      kode: "BRG04",
+      id: "BRG04",
       nama: "MIE INSTANT 1 dus isi 36",
+      kategori: "Mie",
       satuan: "dus",
-      harga: 45000,
+      hargaSatuan: 45000,
+      hargaGrosir: 42000,
+      minGrosir: 5,
       stok: 20,
       tersedia: true
     }
   ];
   return daftarBarang;
+}
+
+// function untuk mengubah angka menjadi format rupiah
+function formatRupiah(angka: number): string {
+  return "Rp " + angka.toLocaleString("id-ID");
 }
 
 // function seleksi kondisi untuk mengecek status barang
@@ -87,14 +105,17 @@ function cekStatusBarang(stok: number): string {
   }
 }
 
-// function menampilkan untuk menampilkan seluruh daftar barang menggunakan loop for
-function tampilkanDaftarBarang(daftarBarang: Barang[]): void {
-  console.log ("\n Daftar STOK BARANG TOKO GROSIR");
-  for (let i : number = 0; i < daftarBarang.length; i++) {
-    const b: Barang = daftarBarang[i]!;
-    const status : string = cekStatusBarang(b.stok);
-    console.log( '${i + 1}. [${b.kode}] ${b.nama} (${b.satuan}) - Rp ${b.harga} - Stok: ${b.stok} - Status: ${status}');
+// function untuk membuat ID barang baru secara otomatis (BRG01, BRG02, dst)
+function buatIdBaru(daftarBarang: Barang[]): string {
+  let terbesar: number = 0;
+  for (const b of daftarBarang) {
+    const Angka: number = Number(b.id.substring(3));
+    if (!isNaN(Angka) && Angka > terbesar) {
+      terbesar = Angka;
+    }
   }
+  const berikutnya: number = terbesar + 1;
+  return `BRG${berikutnya < 10 ? "0" : ""}${berikutnya}`;
 }
 
 // function untuk menampilkan daftar barang yang stoknya menipis atau habis
@@ -120,7 +141,7 @@ function tampilkanDaftarBarangMenipis(daftarBarang: Barang[]): void {
 function cariBarangByKode(daftarBarang: Barang[], kode: string): Barang | null {
   const kodeBersih: string = kode.trim().toUpperCase();
   for (let i: number = 0; i < daftarBarang.length; i++) {
-    if (daftarBarang[i]!.kode === kodeBersih) {
+    if (daftarBarang[i]!.id === kodeBersih) {
       return daftarBarang[i]!;
     }
   }
@@ -163,11 +184,11 @@ function tambahBarangBaru(
   }
 
   const barangBaru: Barang = {
-    kode: kodeBersih,
+    id: kodeBersih,
     nama: namaBersih,
+    kategori: "Umum",
     satuan: satuan.trim() === "" ? "Pcs" : satuan.trim(),
-    harga: hargaEceran,
-    hargaEceran: hargaEceran,
+    hargaSatuan: hargaEceran,
     hargaGrosir: hargaGrosir,
     minGrosir: minGrosir,
     stok: stokAwal,
@@ -184,7 +205,7 @@ function tentukanHargaBarang(barang: Barang, jumlahBeli: number): number {
   if (jumlahBeli >= (barang.minGrosir ?? Infinity) && barang.hargaGrosir !== undefined) {
     return barang.hargaGrosir;
   } else {
-    return barang.hargaEceran ?? barang.harga;
+    return barang.hargaSatuan ?? barang.hargaGrosir ?? 0;
   }
 }
 
@@ -240,7 +261,7 @@ function prosesKasir(daftarBarang: Barang[]): void {
   const keranjang: ItemBelanja[] = [];
   let tambahLagi: boolean = true;
   while (tambahLagi) {
-    tampilkanDaftarBarang(daftarBarang);
+    tampilkanDaftarBarangMenipis(daftarBarang);
     const kodeInput: string = readline
     .question("Masukkan Kode Barang (atau '0' untuk selesai): ")
     .trim();
@@ -273,13 +294,12 @@ const subtotal: number = hitungSubtotal(hargaEceran, jumlahBeli);
 // Kurangi stok barang dan masukkan ke keranjang
 kurangiStok(barang, jumlahBeli);
 keranjang.push({
-  kode: barang.kode,
+  idbarang: barang.id,
   nama: barang.nama,
   jumlah: jumlahBeli,
   hargaSatuan: hargaEceran,
   keteranganHarga: keteranganHarga,
-  subtotal: subtotal,
-  harga: 0
+  subtotal: subtotal
 });
   console.log(
     `[+] Ditambahkan: ${barang.nama} x${jumlahBeli} (${keteranganHarga}) = Rp${subtotal}`
@@ -364,11 +384,11 @@ function main(): void {
 
     // Proses pilihan menu (seleksi kondisi)
     if (pilihan === "1") {
-      tampilkanDaftarBarang(daftarBarang);
+      tampilkanDaftarBarangMenipis(daftarBarang);
     } else if (pilihan === "2") {
       tampilkanDaftarBarangMenipis(daftarBarang);
     } else if (pilihan === "3") {
-      tampilkanDaftarBarang(daftarBarang);
+      tampilkanDaftarBarangMenipis(daftarBarang);
       const kode: string = readline.question("Masukkan Kode Barang: ");
       const jumlah: number = inputAngka("Jumlah stok masuk: ", 1);
       const barang: Barang | null = cariBarangByKode(daftarBarang, kode);
