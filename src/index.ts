@@ -7,6 +7,7 @@ interface Barang {
   nama: string;
   satuan: string;
   harga: number;
+  hargaEceran?: number;
   hargaGrosir?: number;
   minGrosir?: number;
   stok: number; 
@@ -123,30 +124,6 @@ function cariBarangByKode(daftarBarang: Barang[], kode: string): Barang | null {
   return null;
 }
 
-// Function untuk menambah stok barang yang sudah ada (Operator +=)
-function tambahStokBarang(
-  daftarBarang: Barang[],
-  kode: string,
-  jumlahMasuk: number
-): boolean {
-  const barang: Barang | null = cariBarangByKode(daftarBarang, kode);
-
-  if (barang === null) {
-    console.log("[!] Kode barang tidak ditemukan.");
-    return false;
-  }
-
-  if (jumlahMasuk <= 0) {
-    console.log("[!] Jumlah stok masuk harus lebih dari 0.");
-    return false;
-  }
-
-  barang.stok += jumlahMasuk;
-  barang.tersedia = true;
-  console.log(`[OK] Stok ${barang.nama} bertambah menjadi ${barang.stok}.`);
-  return true;
-}
-
 // Function untuk mendaftarkan barang baru ke dalam array stok
 function tambahBarangBaru(
   daftarBarang: Barang[],
@@ -187,6 +164,7 @@ function tambahBarangBaru(
     nama: namaBersih,
     satuan: satuan.trim() === "" ? "Pcs" : satuan.trim(),
     harga: hargaEceran,
+    hargaEceran: hargaEceran,
     hargaGrosir: hargaGrosir,
     minGrosir: minGrosir,
     stok: stokAwal,
