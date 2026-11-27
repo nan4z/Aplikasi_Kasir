@@ -358,6 +358,276 @@ console.log(`Kembalian : Rp${kembalian}`);
 console.log("===================================");
 }
 
+// ===== FITUR CRUD (Create, Read, Update, Delete) & SEARCH =====
+// Function Create (menu 1): input data barang baru dari pengguna
+function tambahData(daftarBarang: Barang[]): void {
+  console.log("\n--- TAMBAH BARANG BARU ---");
+  const nama: string = readline.question("Nama Barang: ");
+  const kategori: string = readline.question("Kategori (Sembako/Makanan Instan/dll): ");
+  const satuan: string = readline.question("Satuan (Karung/Dus/Bal/Pcs): ");
+  const hargaSatuan: number = inputAngka("Harga Satuan/Eceran (Rp): ", 1);
+  const hargaGrosir: number = inputAngka("Harga Grosir (Rp): ", 1);
+  const minGrosir: number = inputAngka("Minimal Beli Grosir: ", 1);
+  const stokAwal: number = inputAngka("Stok Awal: ", 0);
+  tambahBarangBaru(daftarBarang, nama, kategori, satuan, hargaSatuan, hargaGrosir, minGrosir, stokAwal);
+}
+
+// Function Read (menu 2): tampilkan seluruh barang, jumlah stok, pendapatan, dan detail berdasarkan ID
+function bacaData(daftarBarang: Barang[]): void {
+  tampilkanDaftarBarang(daftarBarang);
+  if (daftarBarang.length === 0) {
+    return;
+  }
+  tampilkanDaftarBarangMenipis(daftarBarang);
+
+  let jumlahStok: number = 0;
+  for (let i: number = 0; i < daftarBarang.length; i++) {
+    jumlahStok += daftarBarang[i]!.stok;
+  }
+  console.log(`\nJumlah Jenis Barang : ${daftarBarang.length}`);
+  console.log(`Jumlah Seluruh Stok : ${jumlahStok}`);
+  console.log(`Total Pendapatan    : ${formatRupiah(totalPendapatan)}`);
+
+  const id: string = readline.question("\nMasukkan ID Barang untuk lihat detail (kosongkan untuk lewati): ");
+  if (id.trim() === "") {
+    return;
+  }
+  const barang: Barang | null = cariBarangById(daftarBarang, id);
+  if (barang !== null) {
+    tampilkanDetailBarang(barang);
+  } else {
+    console.log("[!] Barang tidak ditemukan.");
+  }
+}
+
+// Function Update (menu 3): ubah harga, tambah stok, atau kurangi stok
+function ubahData(daftarBarang: Barang[]): void {
+  tampilkanDaftarBarang(daftarBarang);
+  const id: string = readline.question("Masukkan ID Barang yang akan diubah: ");
+  const barang: Barang | null = cariBarangById(daftarBarang, id);
+  if (barang === null) {
+    console.log("[!] Barang tidak ditemukan.");
+    return;
+  }
+  console.log(`Barang: ${barang.nama} | Harga: ${formatRupiah(barang.hargaSatuan)} | Stok saat ini: ${barang.stok}`);
+  console.log("1. Ubah harga satuan");
+  console.log("2. Tambah stok");
+  console.log("3. Kurangi stok");
+  const pilihan: string = readline.question("Pilih (1-3): ").trim();
+
+  if (pilihan === "1") {
+    const hargaBaru: number = inputAngka("Harga satuan baru (Rp): ", 1);
+    if (hargaBaru < barang.hargaGrosir) {
+      console.log("[!] Harga satuan tidak boleh lebih murah dari harga grosir.");
+    } else {
+      barang.hargaSatuan = hargaBaru;
+      console.log(`[OK] Harga '${barang.nama}' berhasil diubah menjadi ${formatRupiah(barang.hargaSatuan)}.`);
+    }
+  } else if (pilihan === "2") {
+    const jumlah: number = inputAngka("Jumlah stok yang ditambah: ", 1);
+    barang.stok += jumlah;
+    console.log(`[OK] Stok '${barang.nama}' bertambah. Stok sekarang: ${barang.stok}`);
+  } else if (pilihan === "3") {
+    const jumlah: number = inputAngka("Jumlah stok yang dikurangi: ", 1);
+    if (jumlah > barang.stok) {
+      console.log("[!] Pengurangan melebihi stok yang ada.");
+    } else {
+      barang.stok -= jumlah;
+      console.log(`[OK] Stok '${barang.nama}' berkurang. Stok sekarang: ${barang.stok}`);
+    }
+  } else {
+    console.log("[!] Pilihan tidak valid, perubahan dibatalkan.");
+  }
+}
+
+// Function Delete (menu 4): hapus barang dengan konfirmasi (nested if 3 tingkat + splice)
+function hapusData(daftarBarang: Barang[]): void {
+  tampilkanDaftarBarang(daftarBarang);
+  const id: string = readline.question("Masukkan ID Barang yang akan dihapus: ");
+  const index: number = cariIndexById(daftarBarang, id);
+
+  if (index === -1) {
+    console.log("[!] Barang tidak ditemukan.");
+    return;
+  }
+
+  const barang: Barang = daftarBarang[index]!;
+  tampilkanDetailBarang(barang);
+  const yakin: string = readline.question("Yakin ingin menghapus barang ini? (y/n): ").trim().toLowerCase();
+  let lanjutHapus: boolean = false;
+
+  if (yakin === "y") {
+    if (barang.stok > 0) {
+      const yakinLagi: string = readline
+        .question(`Barang masih memiliki stok ${barang.stok}. Tetap hapus? (y/n): `)
+        .trim()
+        .toLowerCase();
+      if (yakinLagi === "y") {
+        lanjutHapus = true;
+      } else {
+        console.log("[!] Penghapusan dibatalkan.");
+      }
+    } else {
+      lanjutHapus = true;
+    }
+  } else {
+    console.log("[!] Penghapusan dibatalkan.");
+  }
+
+  if (lanjutHapus) {
+    daftarBarang.splice(index, 1);
+    console.log(`[OK] Barang '${barang.nama}' berhasil dihapus.`);
+  }
+}
+
+// Function Search (menu 5): cari barang berdasarkan kata kunci + filter tambahan stok tersedia
+function cariData(daftarBarang: Barang[]): void {
+  const kataKunci: string = readline.question("Masukkan kata kunci (ID / nama / kategori): ").trim();
+  if (kataKunci === "") {
+    console.log("[!] Kata kunci tidak boleh kosong.");
+    return;
+  }
+  const filterStok: string = readline
+    .question("Hanya tampilkan barang yang stoknya tersedia? (y/n): ")
+    .trim()
+    .toLowerCase();
+  const hasil: Barang[] = cariBarang(daftarBarang, kataKunci, filterStok === "y");
+
+  console.log(`\n Hasil pencarian '${kataKunci}': ${hasil.length} barang ditemukan`);
+  if (hasil.length === 0) {
+    console.log("[!] Tidak ada barang yang cocok.");
+    return;
+  }
+  hasil.forEach((b: Barang, i: number): void => {
+    cetakBarisBarang(b, i + 1);
+  });
+}
+
+// Function Simulasi Harga per dus (menu 7) - operator %, *=, /=, -=
+function simulasiHarga(): void {
+  console.log(`\n=== SIMULASI HARGA DUS (isi ${ISI_PER_DUS} pcs, diskon dus ${PERSEN_DISKON_DUS * 100}%) ===`);
+  const hargaSatuan: number = inputAngka("Harga per pcs (Rp): ", 1);
+  const jumlahPcs: number = inputAngka("Jumlah pcs yang dibeli: ", 1);
+
+  const jumlahDus: number = Math.floor(jumlahPcs / ISI_PER_DUS);
+  const sisaPcs: number = jumlahPcs % ISI_PER_DUS;
+
+  let hargaPerDus: number = hargaSatuan;
+  hargaPerDus *= ISI_PER_DUS;
+  hargaPerDus -= Math.round(hargaPerDus * PERSEN_DISKON_DUS);
+
+  const totalHarga: number = hargaPerDus * jumlahDus + hargaSatuan * sisaPcs;
+  let rataRataPerPcs: number = totalHarga;
+  rataRataPerPcs /= jumlahPcs;
+
+  console.log(`Jumlah dus penuh     : ${jumlahDus}`);
+  console.log(`Sisa pcs (eceran)    : ${sisaPcs}`);
+  console.log(`Harga per dus        : ${formatRupiah(hargaPerDus)}`);
+  console.log(`Total harga          : ${formatRupiah(totalHarga)}`);
+  console.log(`Rata-rata per pcs    : ${formatRupiah(Math.round(rataRataPerPcs))}`);
+}
+
+// Function alur transaksi kasir (menu 6)
+function transaksiKasir(daftarBarang: Barang[]): void {
+  const keranjang: ItemBelanja[] = [];
+  let tambahLagi: boolean = true;
+
+  while (tambahLagi) {
+    tampilkanDaftarBarang(daftarBarang);
+    const idInput: string = readline
+      .question("Masukkan ID Barang (atau '0' untuk selesai): ")
+      .trim();
+    if (idInput === "0") {
+      break;
+    }
+    const barang: Barang | null = cariBarangById(daftarBarang, idInput);
+    if (barang === null) {
+      console.log("[!] Barang tidak ditemukan.");
+      continue;
+    }
+    if (barang.stok <= 0) {
+      console.log("[!] Stok barang sedang habis.");
+      continue;
+    }
+    const jumlahBeli: number = inputAngka(`Jumlah beli (maks ${barang.stok}): `, 1);
+    if (jumlahBeli > barang.stok) {
+      console.log("[!] Jumlah beli melebihi stok yang tersedia.");
+      continue;
+    }
+
+    // Menentukan harga satuan (grosir atau eceran) dan menghitung subtotal
+    const hargaSatuan: number = tentukanHargaBarang(barang, jumlahBeli);
+    const keteranganHarga: string = jumlahBeli >= barang.minGrosir ? "Grosir" : "Eceran";
+    const subtotal: number = hitungSubtotal(hargaSatuan, jumlahBeli);
+
+    // Kurangi stok barang dan masukkan ke keranjang
+    kurangiStok(barang, jumlahBeli);
+    keranjang.push({
+      idBarang: barang.id,
+      nama: barang.nama,
+      jumlah: jumlahBeli,
+      hargaSatuan: hargaSatuan,
+      keteranganHarga: keteranganHarga,
+      subtotal: subtotal,
+    });
+    console.log(`[+] Ditambahkan: ${barang.nama} x${jumlahBeli} (${keteranganHarga}) = ${formatRupiah(subtotal)}`);
+
+    const jawabLanjut: string = readline.question("Tambah barang lain? (y/n): ").trim().toLowerCase();
+    if (jawabLanjut !== "y") {
+      tambahLagi = false;
+    }
+  }
+
+  if (keranjang.length === 0) {
+    console.log("[!] Transaksi dibatalkan karena keranjang kosong.");
+    return;
+  }
+
+  // Hitung total belanja menggunakan loop for...of
+  let totalKotor: number = 0;
+  for (const item of keranjang) {
+    totalKotor += item.subtotal;
+  }
+
+  const jawabMember: string = readline.question("Apakah pembeli member grosir? (y/n): ").trim().toLowerCase();
+  const isMember: boolean = jawabMember === "y";
+  const diskon: number = hitungDiskon(totalKotor, isMember);
+  const totalBayar: number = totalKotor - diskon;
+  console.log(`\nTotal Belanja : ${formatRupiah(totalKotor)}`);
+  console.log(`Diskon        : ${formatRupiah(diskon)}`);
+  console.log(`Total Tagihan : ${formatRupiah(totalBayar)}`);
+
+  // Pembayaran menggunakan do...while sampai uang cukup
+  let uangDiterima: number;
+  do {
+    uangDiterima = inputAngka("Masukkan Uang Bayar (Rp): ", 0);
+    if (uangDiterima < totalBayar) {
+      console.log(`[!] Uang kurang ${formatRupiah(totalBayar - uangDiterima)}. Silakan masukkan lagi.`);
+    }
+  } while (uangDiterima < totalBayar);
+  const kembalian: number = hitungKembalian(totalBayar, uangDiterima);
+  totalPendapatan += totalBayar;
+
+  // Cetak struk
+  console.log(`\n=== STRUK TRANSAKSI ${NAMA_TOKO} ===`);
+  for (let i: number = 0; i < keranjang.length; i++) {
+    const item: ItemBelanja = keranjang[i]!;
+    console.log(
+      `${i + 1}. ${item.nama} (${item.keteranganHarga}) | ` +
+        `${item.jumlah} x ${formatRupiah(item.hargaSatuan)} = ${formatRupiah(item.subtotal)}`
+    );
+  }
+  console.log("-----------------------------------");
+  console.log(`Total Kotor   : ${formatRupiah(totalKotor)}`);
+  console.log(`Diskon        : ${formatRupiah(diskon)}`);
+  console.log(`Total Bayar   : ${formatRupiah(totalBayar)}`);
+  console.log(`Uang Diterima : ${formatRupiah(uangDiterima)}`);
+  console.log(`Kembalian     : ${formatRupiah(kembalian)}`);
+  console.log("===================================");
+}
+
+
+
 //==========================
 // PROGRAM UTAMA & MENU (LOOP WHILE)
 //==========================
