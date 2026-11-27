@@ -12,7 +12,7 @@
     "types": ["node"],
     "esModuleInterop": true,
     "allowArbitraryExtensions": true,
-    "moduleResolution": "node",
+    "moduleResolution": "Node16",
     // Add "node" here only when @types/node is installed.
     // For Node.js, install @types/node and uncomment:
     // "types": ["node"],
