@@ -90,3 +90,24 @@ function tampilkanDaftarBarang(daftarBarang: Barang[]): void {
     console.log( '${i + 1}. [${b.kode}] ${b.nama} (${b.satuan}) - Rp ${b.harga} - Stok: ${b.stok} - Status: ${status}');
   }
 }
+
+// function untuk menampilkan daftar barang yang stoknya menipis atau habis
+function tampilkanDaftarBarangMenipis(daftarBarang: Barang[]): void {
+  console.log("\n Daftar STOK BARANG MENIPIS / HABIS");
+  let adaYangMenipis: boolean = false;
+
+  for (let i: number = 0; i < daftarBarang.length; i++) {
+    const b: Barang = daftarBarang[i]!;
+    if (b.stok <= BATAS_STOK_MENIPIS) {
+      adaYangMenipis = true;
+      const status: string = cekStatusBarang(b.stok);
+      console.log('${i + 1}. [${b.kode}] ${b.nama} (${b.satuan}) - Rp ${b.harga} - Stok: ${b.stok} - Status: ${status}');
+    }
+  }
+
+  if (!adaYangMenipis) {
+    console.log("Semua stok tersedia/aman.");
+  }
+}
+
+//
