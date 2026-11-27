@@ -1,5 +1,5 @@
 // Aplikasi Kasir dan Manajemen Stok Toko Grosir
-
+import * as readline from "readline-sync";
 
 // ===== TIPE DATA =====
 interface Barang {
